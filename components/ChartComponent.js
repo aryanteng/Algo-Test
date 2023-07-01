@@ -62,7 +62,7 @@ function ChartComponent(props) {
     areaBottomColor,
   ]);
 
-  return <div ref={chartContainerRef} />;
+  return <div className='w-full' ref={chartContainerRef} />;
 }
 
 export default ChartComponent;
