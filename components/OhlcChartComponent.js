@@ -1,10 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import { createChart, ColorType } from 'lightweight-charts';
 import { memo } from 'react';
+import { convertToOHLC } from '../utils/convertToOHLC';
 
-function ChartComponent(props) {
+function OhlcChartComponent(props) {
   const {
     data,
+    resolution,
     colors: {
       backgroundColor = 'white',
       lineColor = '#2962FF',
@@ -31,23 +33,15 @@ function ChartComponent(props) {
     });
     chart.timeScale().fitContent();
 
-    const newSeries = chart.addAreaSeries({
+    const newSeries = chart.addCandlestickSeries({
       lineColor,
       topColor: areaTopColor,
       bottomColor: areaBottomColor,
     });
 
-    const newData = data.map((item) => {
-      return {
-        time: new Date(item[0]).getTime(),
-        value: item[1],
-        volume: item[2],
-      };
-    });
+    const ohlcData = convertToOHLC(data, resolution);
 
-    console.log('NEW', newData);
-
-    newSeries.setData(newData);
+    newSeries.setData(ohlcData);
 
     window.addEventListener('resize', handleResize);
 
@@ -58,6 +52,7 @@ function ChartComponent(props) {
     };
   }, [
     data,
+    resolution,
     backgroundColor,
     lineColor,
     textColor,
@@ -68,4 +63,4 @@ function ChartComponent(props) {
   return <div className='w-full' ref={chartContainerRef} />;
 }
 
-export default memo(ChartComponent);
+export default memo(OhlcChartComponent);
