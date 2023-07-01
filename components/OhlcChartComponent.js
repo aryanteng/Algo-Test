@@ -128,7 +128,14 @@ function OhlcChartComponent(props) {
     convertToOHLC,
   ]);
 
-  return <div className='w-full' ref={chartContainerRef} />;
+  return (
+    <>
+      <div className='w-full' ref={chartContainerRef} />
+      <p className='text-xl'>
+        Resolution: {resolution} {resolution == 1 ? 'minute' : 'minutes'}
+      </p>
+    </>
+  );
 }
 
 export default memo(OhlcChartComponent);
