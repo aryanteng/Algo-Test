@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { createChart, ColorType } from 'lightweight-charts';
+import { memo } from 'react';
 
 function ChartComponent(props) {
   const {
@@ -65,4 +66,4 @@ function ChartComponent(props) {
   return <div className='w-full' ref={chartContainerRef} />;
 }
 
-export default ChartComponent;
+export default memo(ChartComponent);
