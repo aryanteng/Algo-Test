@@ -1,6 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createChart, ColorType } from 'lightweight-charts';
 import { memo } from 'react';
+import { convertToOHLC } from '../utils/convertToOHLC';
+import { combineDataByTimestamp } from '../utils/combineDataByTimestamp';
 
 function CombinedChartComponent(props) {
   const {
@@ -18,93 +20,6 @@ function CombinedChartComponent(props) {
   const chartContainerRef = useRef();
 
   const [selectedInstruments, setSelectedInstruments] = useState([]);
-
-  const convertToOHLC = useCallback((data, resolution) => {
-    const sortedData = [...data].sort(
-      (a, b) => new Date(a[0]) - new Date(b[0])
-    );
-
-    const ohlcData = [];
-    let currentOpen = 0;
-    let currentHigh = 0;
-    let currentLow = 0;
-    let currentClose = 0;
-    let currentVolume = 0;
-    let currentTimestamp = null;
-
-    sortedData.forEach((item) => {
-      const timestamp = new Date(item[0]);
-      const value = item[1];
-      const volume = item[2];
-
-      if (!currentTimestamp) {
-        currentTimestamp = timestamp;
-        currentOpen = value;
-        currentHigh = value;
-        currentLow = value;
-        currentClose = value;
-        currentVolume = volume;
-      }
-
-      const minutesDiff = Math.floor(
-        (timestamp - currentTimestamp) / (1000 * 60)
-      );
-      if (minutesDiff >= resolution) {
-        ohlcData.push({
-          time: currentTimestamp.getTime(),
-          open: currentOpen,
-          high: currentHigh,
-          low: currentLow,
-          close: currentClose,
-          volume: currentVolume,
-        });
-
-        currentTimestamp = timestamp;
-        currentOpen = value;
-        currentHigh = value;
-        currentLow = value;
-        currentClose = value;
-        currentVolume = volume;
-      } else {
-        currentHigh = Math.max(currentHigh, value);
-        currentLow = Math.min(currentLow, value);
-        currentClose = value;
-        currentVolume += volume;
-      }
-    });
-
-    if (currentTimestamp) {
-      ohlcData.push({
-        time: currentTimestamp.getTime(),
-        open: currentOpen,
-        high: currentHigh,
-        low: currentLow,
-        close: currentClose,
-        volume: currentVolume,
-      });
-    }
-
-    return ohlcData;
-  }, []);
-
-  const combineDataByTimestamp = useCallback((combinedArray) => {
-    const combinedMap = new Map();
-    combinedArray.forEach((item) => {
-      const timestamp = item[0];
-      const ltp = item[1];
-      const volume = item[2];
-
-      if (combinedMap.has(timestamp)) {
-        const existingItem = combinedMap.get(timestamp);
-        existingItem[1] += ltp;
-        existingItem[2] += volume;
-      } else {
-        combinedMap.set(timestamp, [timestamp, ltp, volume]);
-      }
-    });
-    const combinedResult = Array.from(combinedMap.values());
-    return combinedResult;
-  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -163,9 +78,7 @@ function CombinedChartComponent(props) {
     textColor,
     areaTopColor,
     areaBottomColor,
-    convertToOHLC,
     selectedInstruments,
-    combineDataByTimestamp,
   ]);
 
   const handleInstrumentSelection = (instrument) => {
