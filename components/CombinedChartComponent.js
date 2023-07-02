@@ -19,124 +19,92 @@ function CombinedChartComponent(props) {
 
   const [selectedInstruments, setSelectedInstruments] = useState([]);
 
-  const convertToOHLC = useCallback((combinedData) => {
+  const convertToOHLC = useCallback((data, resolution) => {
+    const sortedData = [...data].sort(
+      (a, b) => new Date(a[0]) - new Date(b[0])
+    );
+
     const ohlcData = [];
+    let currentOpen = 0;
+    let currentHigh = 0;
+    let currentLow = 0;
+    let currentClose = 0;
+    let currentVolume = 0;
+    let currentTimestamp = null;
 
-    combinedData.forEach((item) => {
-      const instrument = item.instrument;
-      const dataPoints = item.dataPoints;
+    sortedData.forEach((item) => {
+      const timestamp = new Date(item[0]);
+      const value = item[1];
+      const volume = item[2];
 
-      dataPoints.forEach((dataPoint) => {
-        const timestamp = dataPoint.time;
-        const open = dataPoint.open;
-        const high = dataPoint.high;
-        const low = dataPoint.low;
-        const close = dataPoint.close;
-        const volume = dataPoint.volume;
+      if (!currentTimestamp) {
+        currentTimestamp = timestamp;
+        currentOpen = value;
+        currentHigh = value;
+        currentLow = value;
+        currentClose = value;
+        currentVolume = volume;
+      }
 
+      const minutesDiff = Math.floor(
+        (timestamp - currentTimestamp) / (1000 * 60)
+      );
+      if (minutesDiff >= resolution) {
         ohlcData.push({
-          time: timestamp,
-          open: open,
-          high: high,
-          low: low,
-          close: close,
-          volume: volume,
-          instrument: instrument,
+          time: currentTimestamp.getTime(),
+          open: currentOpen,
+          high: currentHigh,
+          low: currentLow,
+          close: currentClose,
+          volume: currentVolume,
         });
-      });
+
+        currentTimestamp = timestamp;
+        currentOpen = value;
+        currentHigh = value;
+        currentLow = value;
+        currentClose = value;
+        currentVolume = volume;
+      } else {
+        currentHigh = Math.max(currentHigh, value);
+        currentLow = Math.min(currentLow, value);
+        currentClose = value;
+        currentVolume += volume;
+      }
     });
 
-    const sortedData = ohlcData.sort((a, b) => a.time - b.time);
+    if (currentTimestamp) {
+      ohlcData.push({
+        time: currentTimestamp.getTime(),
+        open: currentOpen,
+        high: currentHigh,
+        low: currentLow,
+        close: currentClose,
+        volume: currentVolume,
+      });
+    }
 
-    return sortedData;
+    return ohlcData;
   }, []);
 
-  const combineOHLCData = useCallback(
-    (selectedInstruments, data, resolution) => {
-      const combinedData = [];
+  function combineDataByTimestamp(combinedArray) {
+    const combinedMap = new Map();
+    combinedArray.forEach((item) => {
+      const timestamp = item[0];
+      const ltp = item[1];
+      const volume = item[2];
 
-      selectedInstruments.forEach((instrument) => {
-        const instrumentData = data[instrument];
-        const sortedData = [...instrumentData].sort(
-          (a, b) => new Date(a[0]) - new Date(b[0])
-        );
-
-        const ohlcData = [];
-        let currentOpen = 0;
-        let currentHigh = 0;
-        let currentLow = 0;
-        let currentClose = 0;
-        let currentVolume = 0;
-        let currentTimestamp = null;
-
-        sortedData.forEach((item) => {
-          const timestamp = new Date(item[0]);
-          const ltp = item[1] * 1000;
-          const volume = item[2];
-
-          if (!currentTimestamp) {
-            currentTimestamp = timestamp;
-            currentOpen = ltp;
-            currentHigh = ltp;
-            currentLow = ltp;
-            currentClose = ltp;
-            currentVolume = volume;
-          } else if (timestamp.getTime() === currentTimestamp.getTime()) {
-            currentHigh = Math.max(currentHigh, ltp);
-            currentLow = Math.min(currentLow, ltp);
-            currentClose = ltp;
-            currentVolume += volume;
-          } else {
-            const minutesDiff = Math.floor(
-              (timestamp - currentTimestamp) / (1000 * 60)
-            );
-            if (minutesDiff >= resolution) {
-              ohlcData.push({
-                time: currentTimestamp.getTime(),
-                open: currentOpen,
-                high: currentHigh,
-                low: currentLow,
-                close: currentClose,
-                volume: currentVolume,
-              });
-              currentTimestamp = timestamp;
-              currentOpen = ltp;
-              currentHigh = ltp;
-              currentLow = ltp;
-              currentClose = ltp;
-              currentVolume = volume;
-            } else {
-              currentHigh = Math.max(currentHigh, ltp);
-              currentLow = Math.min(currentLow, ltp);
-              currentClose = ltp;
-              currentVolume += volume;
-            }
-          }
-        });
-        if (currentTimestamp) {
-          ohlcData.push({
-            time: currentTimestamp.getTime(),
-            open: currentOpen,
-            high: currentHigh,
-            low: currentLow,
-            close: currentClose,
-            volume: currentVolume,
-          });
-        }
-        combinedData.push({ instrument, dataPoints: ohlcData });
-      });
-
-      const sortedCombinedData = combinedData.sort((a, b) => {
-        const aTime = a.dataPoints[0].time;
-        const bTime = b.dataPoints[0].time;
-        return aTime - bTime;
-      });
-
-      const ohlcData = convertToOHLC(sortedCombinedData, resolution);
-      return ohlcData;
-    },
-    [convertToOHLC]
-  );
+      if (combinedMap.has(timestamp)) {
+        const existingItem = combinedMap.get(timestamp);
+        existingItem[1] += ltp;
+        existingItem[2] += volume;
+      } else {
+        combinedMap.set(timestamp, [timestamp, ltp, volume]);
+      }
+    });
+    const combinedResult = Array.from(combinedMap.values());
+    return combinedResult;
+  }
 
   useEffect(() => {
     const handleResize = () => {
@@ -159,11 +127,26 @@ function CombinedChartComponent(props) {
       bottomColor: areaBottomColor,
     });
 
-    const combinedData = combineOHLCData(selectedInstruments, data, resolution);
+    let selectedData = [];
+    selectedInstruments.forEach((instrument) => {
+      data[instrument].forEach((item) => {
+        selectedData.push(item);
+      });
+    });
 
-    const sortedCombinedData = combinedData.sort((a, b) => a.time - b.time);
-    console.log('COMBINED', sortedCombinedData);
-    newSeries.setData(sortedCombinedData);
+    const combinedDataByTimestamp = combineDataByTimestamp(selectedData);
+
+    console.log('Combined', combinedDataByTimestamp);
+
+    const sortedCombinedData = combinedDataByTimestamp.sort(
+      (a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime()
+    );
+
+    const ohlcData = convertToOHLC(sortedCombinedData, resolution);
+
+    console.log('OHLC', ohlcData);
+
+    newSeries.setData(ohlcData);
 
     window.addEventListener('resize', handleResize);
 
@@ -181,7 +164,6 @@ function CombinedChartComponent(props) {
     areaTopColor,
     areaBottomColor,
     convertToOHLC,
-    combineOHLCData,
     selectedInstruments,
   ]);
 
@@ -213,10 +195,10 @@ function CombinedChartComponent(props) {
             </div>
           );
         })}
-        <p className='text-xl'>
-          Resolution: {resolution} {resolution === 1 ? 'minute' : 'minutes'}
-        </p>
       </div>
+      <p className='text-xl'>
+        Resolution: {resolution} {resolution === 1 ? 'minute' : 'minutes'}
+      </p>
     </>
   );
 }
