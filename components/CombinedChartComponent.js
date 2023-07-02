@@ -87,7 +87,7 @@ function CombinedChartComponent(props) {
     return ohlcData;
   }, []);
 
-  function combineDataByTimestamp(combinedArray) {
+  const combineDataByTimestamp = useCallback((combinedArray) => {
     const combinedMap = new Map();
     combinedArray.forEach((item) => {
       const timestamp = item[0];
@@ -104,7 +104,7 @@ function CombinedChartComponent(props) {
     });
     const combinedResult = Array.from(combinedMap.values());
     return combinedResult;
-  }
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -165,6 +165,7 @@ function CombinedChartComponent(props) {
     areaBottomColor,
     convertToOHLC,
     selectedInstruments,
+    combineDataByTimestamp,
   ]);
 
   const handleInstrumentSelection = (instrument) => {
@@ -176,7 +177,7 @@ function CombinedChartComponent(props) {
   };
 
   useEffect(() => {
-    console.log('SEL', selectedInstruments);
+    console.log('SELECTED', selectedInstruments);
   }, [selectedInstruments]);
 
   return (
