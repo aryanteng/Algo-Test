@@ -193,44 +193,30 @@ function CombinedChartComponent(props) {
     );
   };
 
+  useEffect(() => {
+    console.log('SEL', selectedInstruments);
+  }, [selectedInstruments]);
+
   return (
     <>
       <div className='w-full' ref={chartContainerRef} />
-      <>
-        <div>
-          <label>
-            <input
-              type='checkbox'
-              checked={selectedInstruments.includes('Data1')}
-              onChange={() => handleInstrumentSelection('Data1')}
-            />
-            Data1
-          </label>
-        </div>
-        <div>
-          <label>
-            <input
-              type='checkbox'
-              checked={selectedInstruments.includes('Data2')}
-              onChange={() => handleInstrumentSelection('Data2')}
-            />
-            Data2
-          </label>
-        </div>
-        <div>
-          <label>
-            <input
-              type='checkbox'
-              checked={selectedInstruments.includes('Data3')}
-              onChange={() => handleInstrumentSelection('Data3')}
-            />
-            Data3
-          </label>
-        </div>
+      <div className='flex items-center gap-10'>
+        {Object.keys(data).map((instrument) => {
+          return (
+            <div key={instrument} className='flex items-center gap-1'>
+              <input
+                type='checkbox'
+                checked={selectedInstruments.includes(instrument)}
+                onChange={() => handleInstrumentSelection(instrument)}
+              />
+              <label>{instrument}</label>
+            </div>
+          );
+        })}
         <p className='text-xl'>
           Resolution: {resolution} {resolution === 1 ? 'minute' : 'minutes'}
         </p>
-      </>
+      </div>
     </>
   );
 }
