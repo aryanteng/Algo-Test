@@ -8,18 +8,19 @@ function Phase3() {
   return (
     <div className='flex flex-col items-center gap-10 p-10'>
       <h1 className='text-5xl'>Phase III: OHLC</h1>
-      <label htmlFor='resolution'>Resolution:</label>
-      <select
-        id='resolution'
-        value={resolution}
-        onChange={(e) => {
-          setResolution(e.target.value);
-        }}
-      >
-        <option value={1}>1</option>
-        <option value={5}>5</option>
-        <option value={30}>30</option>
-      </select>
+      <div className='flex gap-1'>
+        <label htmlFor='resolution'>Resolution:</label>
+        <select
+          value={resolution}
+          onChange={(e) => {
+            setResolution(e.target.value);
+          }}
+        >
+          <option value={1}>1</option>
+          <option value={5}>5</option>
+          <option value={30}>30</option>
+        </select>
+      </div>
       <OhlcChartComponent data={data1} resolution={resolution} />
     </div>
   );
