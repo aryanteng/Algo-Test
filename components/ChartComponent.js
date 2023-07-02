@@ -58,8 +58,6 @@ function ChartComponent(props) {
       };
     });
 
-    // newData.sort((a, b) => a.time - b.time);
-
     console.log('NEW', newData);
 
     newSeries.setData(newData);
