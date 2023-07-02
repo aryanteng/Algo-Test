@@ -19,7 +19,7 @@ function CombinedChartComponent(props) {
 
   const [selectedInstruments, setSelectedInstruments] = useState([]);
 
-  const convertToOHLC = useCallback((combinedData, resolution) => {
+  const convertToOHLC = useCallback((combinedData) => {
     const ohlcData = [];
 
     combinedData.forEach((item) => {
