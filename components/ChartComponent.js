@@ -15,6 +15,19 @@ function ChartComponent(props) {
   } = props;
 
   const chartContainerRef = useRef();
+  function dateToChartTimeMinute(date) {
+    return (
+      Date.UTC(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        date.getHours(),
+        date.getMinutes(),
+        0,
+        0
+      ) / 1000
+    );
+  }
 
   useEffect(() => {
     const handleResize = () => {
@@ -39,11 +52,13 @@ function ChartComponent(props) {
 
     const newData = data.map((item) => {
       return {
-        time: new Date(item[0]).getTime(),
+        time: Math.round(new Date(item[0]).getTime() / 1000),
         value: item[1],
         volume: item[2],
       };
     });
+
+    // newData.sort((a, b) => a.time - b.time);
 
     console.log('NEW', newData);
 

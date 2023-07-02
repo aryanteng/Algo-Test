@@ -28,7 +28,7 @@ export const convertToOHLC = (data, resolution) => {
     );
     if (minutesDiff >= resolution) {
       ohlcData.push({
-        time: currentTimestamp.getTime(),
+        time: Math.round(new Date(currentTimestamp.getTime()).getTime() / 1000),
         open: currentOpen,
         high: currentHigh,
         low: currentLow,
