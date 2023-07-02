@@ -81,35 +81,38 @@ function CombinedChartComponent(props) {
             currentLow = ltp;
             currentClose = ltp;
             currentVolume = volume;
-          }
-
-          const minutesDiff = Math.floor(
-            (timestamp - currentTimestamp) / (1000 * 60)
-          );
-          if (minutesDiff >= resolution) {
-            ohlcData.push({
-              time: currentTimestamp.getTime(),
-              open: currentOpen,
-              high: currentHigh,
-              low: currentLow,
-              close: currentClose,
-              volume: currentVolume,
-            });
-
-            currentTimestamp = timestamp;
-            currentOpen = ltp;
-            currentHigh = ltp;
-            currentLow = ltp;
-            currentClose = ltp;
-            currentVolume = volume;
-          } else {
+          } else if (timestamp.getTime() === currentTimestamp.getTime()) {
             currentHigh = Math.max(currentHigh, ltp);
             currentLow = Math.min(currentLow, ltp);
             currentClose = ltp;
             currentVolume += volume;
+          } else {
+            const minutesDiff = Math.floor(
+              (timestamp - currentTimestamp) / (1000 * 60)
+            );
+            if (minutesDiff >= resolution) {
+              ohlcData.push({
+                time: currentTimestamp.getTime(),
+                open: currentOpen,
+                high: currentHigh,
+                low: currentLow,
+                close: currentClose,
+                volume: currentVolume,
+              });
+              currentTimestamp = timestamp;
+              currentOpen = ltp;
+              currentHigh = ltp;
+              currentLow = ltp;
+              currentClose = ltp;
+              currentVolume = volume;
+            } else {
+              currentHigh = Math.max(currentHigh, ltp);
+              currentLow = Math.min(currentLow, ltp);
+              currentClose = ltp;
+              currentVolume += volume;
+            }
           }
         });
-
         if (currentTimestamp) {
           ohlcData.push({
             time: currentTimestamp.getTime(),
@@ -120,7 +123,6 @@ function CombinedChartComponent(props) {
             volume: currentVolume,
           });
         }
-
         combinedData.push({ instrument, dataPoints: ohlcData });
       });
 
@@ -159,9 +161,9 @@ function CombinedChartComponent(props) {
 
     const combinedData = combineOHLCData(selectedInstruments, data, resolution);
 
-    console.log('COMBINED', combinedData);
-
-    newSeries.setData(combinedData);
+    const sortedCombinedData = combinedData.sort((a, b) => a.time - b.time);
+    console.log('COMBINED', sortedCombinedData);
+    newSeries.setData(sortedCombinedData);
 
     window.addEventListener('resize', handleResize);
 
