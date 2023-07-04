@@ -57,7 +57,7 @@ function CombinedChartComponent(props) {
 
     console.log('Combined', combinedDataByTimestamp);
 
-    const sortedCombinedData = combinedDataByTimestamp.sort(
+    const sortedCombinedData = combinedDataByTimestamp.toSorted(
       (a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime()
     );
 
