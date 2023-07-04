@@ -35,6 +35,7 @@ function OhlcChartComponent(props) {
         secondsVisible: false,
       },
     });
+
     chart.timeScale().fitContent();
 
     const newSeries = chart.addCandlestickSeries({

@@ -11,23 +11,11 @@ function ChartComponent(props) {
       textColor = 'black',
       areaTopColor = '#2962FF',
       areaBottomColor = 'rgba(41, 98, 255, 0.28)',
+      priceUnit = 'rupees',
     } = {},
   } = props;
 
   const chartContainerRef = useRef();
-  function dateToChartTimeMinute(date) {
-    return (
-      Date.UTC(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-        date.getHours(),
-        date.getMinutes(),
-        0,
-        0
-      ) / 1000
-    );
-  }
 
   useEffect(() => {
     const handleResize = () => {
