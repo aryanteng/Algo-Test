@@ -11,7 +11,6 @@ function ChartComponent(props) {
       textColor = 'black',
       areaTopColor = '#2962FF',
       areaBottomColor = 'rgba(41, 98, 255, 0.28)',
-      priceUnit = 'rupees',
     } = {},
   } = props;
 
