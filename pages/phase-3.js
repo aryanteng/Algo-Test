@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { data1 } from '../data/data1';
 import OhlcChartComponent from '../components/OhlcChartComponent';
+import { dropdownOptions } from '../utils/dropdownOptions';
 
 function Phase3() {
   const [resolution, setResolution] = useState(1);
@@ -16,9 +17,13 @@ function Phase3() {
             setResolution(e.target.value);
           }}
         >
-          <option value={1}>1</option>
-          <option value={5}>5</option>
-          <option value={30}>30</option>
+          {dropdownOptions.map((item) => {
+            return (
+              <option value={item} key={item}>
+                {item}
+              </option>
+            );
+          })}
         </select>
       </div>
       <OhlcChartComponent data={data1} resolution={resolution} />
