@@ -30,6 +30,10 @@ function OhlcChartComponent(props) {
       },
       width: chartContainerRef.current.clientWidth,
       height: 300,
+      timeScale: {
+        timeVisible: true,
+        secondsVisible: false,
+      },
     });
     chart.timeScale().fitContent();
 
